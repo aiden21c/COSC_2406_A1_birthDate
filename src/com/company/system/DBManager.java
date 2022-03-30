@@ -3,114 +3,123 @@ package com.company.system;
 import com.company.object.*;
 
 import java.io.*;
-import java.time.LocalTime;
-import java.util.Scanner;
+import java.util.ArrayList;
+import java.util.Date;
 
 public class DBManager {
 
     private String datafile;
     private Heap heap = new Heap();
+    private int pageSize;
+    static final int ARTIST_SIZE = 4636;
 
 //    The datafile specified must be located in the resources folder
     public DBManager(String datafile) {
         this.datafile = "resources/" + datafile;
+        this.pageSize = getPageSize();
+    }
+
+    /** Gets the pagesize defined by the heapfile's name
+     * @return the page size as an integer
+     */
+    private int getPageSize() {
+        String pageSizeString = datafile.substring(15);
+        return Integer.parseInt(pageSizeString);
     }
 
 
-    /** Creates a byte-array of artist objects from the datafile given in the constructor.
-     *      This file must be the pre-prepared artists_processed.csv
-     * @throws FileNotFoundException Thrown if the specified file cannot be found
-     */
-    public void createArtistsFromFile() throws IOException {
-        File csv = new File(datafile);      // Read in the data file specified
-        Scanner s = new Scanner(csv);
-        // Loop over each line of the file for processing
-        while(s.hasNextLine()) {
-            String[] split = customSplit(s.nextLine());             // Split the string by delimiter ','
-            heap.addToArtistArray(new Artist(split));               // Create a new artist and add it to the arraylist
-        }
-        s.close();
-    }
-
-    /**
-     * @param pageSize The size of the byte dump to write to file. Writes one page at a time
-     * @throws IOException If write-out fails
-     */
-    public String[] writeOutBytes(int pageSize) throws IOException {
-        String[] outputs = new String[3];
-
+    public String heapFileDateSearch(Date[] dateRange) throws IOException {
+        RandomAccessFile raf = new RandomAccessFile(datafile, "r");
         long startTime = System.currentTimeMillis();
-//        Create and open the output file for writing
-        FileOutputStream fos = new FileOutputStream(("resources/heap." + pageSize));
-        BufferedOutputStream bos = new BufferedOutputStream(fos, pageSize);
 
-//        Keep track of the number of artists and what artist is currently being iterated over
-        int artistSize = heap.getArtists().size();
-        int artistCount = 0;
-        int pagesWritten = 0;
+        while(raf.getFilePointer() < raf.length()) {
+            int count = 0;
+            while (pageSize - count > ARTIST_SIZE) {
+                char[] name = new char[70];             // 140 bytes
+                Date[] birthdate = new Date[2];         // 16 bytes
+                char[] birthPlace = new char[160];      // 320 bytes
+                Date[] deathDate = new Date[2];                       // 16 bytes
+                char[] field = new char[250];           // 500 bytes
+                char[] genre = new char[390];           // 780 bytes
+                char[] instrument = new char[545];      // 1090 bytes
+                char[] nationality = new char[120];     // 240 bytes
+                char[] thumbnail = new char[295];       // 590 bytes
+                int wikiPageID;                         // 4 bytes
+                char[] description = new char[470];     // 940 bytes
 
-//        Ensure that code is not at the end of the artist array
-        while (artistSize > 0) {
-            byte[] byteOut = new byte[pageSize];        // Create a new byte array of the given page size
-            int bytesAdded = 0;                         // Keep track of how many bytes have been added to this array
-
-//            Ensure the next artist can be written to the current page
-            while((pageSize - bytesAdded) >= heap.getArtists().get(artistCount).getBytes().length) {
-//                Write each byte of this artist to the current byte array (page)
-                for(Byte b : heap.getArtists().get(artistCount).getBytes()) {
-                    byteOut[bytesAdded] = b;
-                    bytesAdded++;
+                for (int i = 0; i < name.length; i++) {
+                    name[i] = raf.readChar();
+                    count += 2;
                 }
-//                Ensure to update the counters
-                artistCount++;
-                artistSize--;
-                if(artistSize == 0) {break;}
-            }
-//            Write the current page out to file and flush the Buffered Output Stream
-            bos.write(byteOut);
-            bos.flush();
-            pagesWritten++;
-        }
 
-        bos.close();
+                for (int i = 0; i < birthdate.length; i++) {
+                    long testDate = raf.readLong();
+                    count += 8;
+                    if(testDate != 0L) {
+                        birthdate[i] = new Date(testDate);
+                    }
+                }
+
+                for (int i = 0; i < birthPlace.length; i++) {
+                    birthPlace[i] = raf.readChar();
+                    count += 2;
+                }
+
+                for (int i = 0; i < deathDate.length; i++) {
+                    long testDate = raf.readLong();
+                    count += 8;
+                    if(testDate != 0L) {
+                        deathDate[i] = new Date(testDate);
+                    }
+                }
+
+                for (int i = 0; i < field.length; i++) {
+                    field[i] = raf.readChar();
+                    count += 2;
+                }
+
+                for (int i = 0; i < genre.length; i++) {
+                    genre[i] = raf.readChar();
+                    count += 2;
+                }
+
+                for (int i = 0; i < instrument.length; i++) {
+                    instrument[i] = raf.readChar();
+                    count += 2;
+                }
+
+                for (int i = 0; i < nationality.length; i++) {
+                    nationality[i] = raf.readChar();
+                    count += 2;
+                }
+
+                for (int i = 0; i < thumbnail.length; i++) {
+                    thumbnail[i] = raf.readChar();
+                    count += 2;
+                }
+
+                wikiPageID = raf.readInt();
+                count += 4;
+
+                for (int i = 0; i < description.length; i++) {
+                    description[i] = raf.readChar();
+                    count += 2;
+                }
+                heap.addToArtistArray(new Artist(name, birthdate, birthPlace, deathDate, field, genre, instrument, nationality, thumbnail, wikiPageID, description));
+            }
+            raf.skipBytes(pageSize - count);
+
+            ArrayList<String> found = heap.birthdateSearch(dateRange);
+            if (!found.isEmpty()) {
+                for(String s : found) {
+                    System.out.println(s);
+                }
+            }
+            heap.clearHeap();
+        }
 
         long endTime = System.currentTimeMillis();
         long totalTime = endTime - startTime;
-
-
-        outputs[0] = Integer.toString(artistCount);
-        outputs[1] = Integer.toString(pagesWritten);
-        outputs[2] = Long.toString(totalTime);
-
-        return outputs;
+        return Long.toString(totalTime);
     }
-
-    /** A function which splits a row of a csv into individual string items
-     *      Accounts for the existence of commas inside items themselves. Items with commas internal are assumed to be surrounded by quotation marks
-     * @param row The csv row to split
-     * @return A string array containing the individual elements of the csv row
-     */
-    private String[] customSplit(String row) {
-        String[] split = new String[11];        // Create a new string array of size 11 to hold each item
-        int count = 0;                          // Set a counter to keep track of the position in the split array
-        boolean notInside = true;               // Set a boolean to keep track of whether the ',' occurs within quotation marks or not
-
-        int start = 0;                          // Set a counter to keep track of the current start of the next item in the csv row
-
-//        Loop over each character within the csv row
-        for(int i = 0; i < row.length()-1; i++) {
-//            If the character encountered is a comma and it is not deemed an "inside comma", add it to the array
-            if(row.charAt(i) == ',' && notInside) {
-                split[count] = row.substring(start,i);        // Substring the row from the beginning of the item to the comma encountered
-                start = i + 1;                                // Set the start of the next item to the character after the comma
-                count++;                                      // Increment the counter on the split array
-//            If the character is a quotation mark, consider all commas encountered "inside commas" until the closing quotation mark is reached
-            } else if (row.charAt(i) == '"') {
-                notInside = !notInside;
-            }
-        }
-        split[count] = row.substring(start);                  // Add the final item to the split array
-        return split;
-    }
-
 }

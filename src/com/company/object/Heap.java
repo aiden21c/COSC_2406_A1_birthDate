@@ -1,6 +1,7 @@
 package com.company.object;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 public class Heap {
 
@@ -13,7 +14,25 @@ public class Heap {
 
     public void addToArtistArray(Artist a) { artists.add(a); }
 
-    public ArrayList<Artist> getArtists() {
-        return artists;
+    public ArrayList<String> birthdateSearch(Date[] dates) {
+        ArrayList<String> output = new ArrayList<>();
+
+        for (Artist a : artists) {
+            boolean artistAdded = false;
+            for(int i = 0; i < a.getBirthdate().length; i++) {
+                if(a.getBirthdate()[i] != null) {
+                    if (a.getBirthdate()[i].before(dates[1]) && a.getBirthdate()[i].after(dates[0])) {
+                        if (!artistAdded) {
+                            output.add(a.toString());
+                            artistAdded = true;
+                        }
+                    }
+                }
+            }
+        }
+        return output;
+
     }
+
+    public void clearHeap() {artists.clear();}
 }
