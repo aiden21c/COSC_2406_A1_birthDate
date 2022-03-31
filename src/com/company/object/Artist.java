@@ -49,36 +49,130 @@ public class Artist {
     public String toString() {
         StringBuilder str = new StringBuilder();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        int count = 0;
 
-        str.append("{\n");
-        str.append("\t\"name\":\"").append(String.valueOf(personName)).append("\",\n");
+        str.append("\t{\n");
+        str.append("\t\t\"name\": \"");
+        while(personName[count] != '\0') {
+            str.append(personName[count]);
+            count++;
+        }
+        str.append("\",\n");
+        count = 0;
 
-        str.append("\t\"birthdate\":[\n");
+        str.append("\t\t\"birthdate\": [ ");
+        int x = 0;
         for (Date date : birthDate) {
             if (date != null) {
-                str.append("\t\t\"").append(sdf.format(date)).append("\"\n");
+                str.append("\"").append(sdf.format(date)).append("\", ");
+            } else if (x == 0) {
+                str.append("\"NULL\", ");
+            }
+            x++;
+        }
+        str.append("],\n");
+
+        str.append("\t\t\"birthplace\": [ ");
+        String[] s = splitString(String.valueOf(birthPlace));
+        for (String l : s) {
+            if (l != null) {
+                str.append("\"");
+                while(l.charAt(count) != '\0') {
+                    str.append(l.charAt(count));
+                    if(!(l.length() > ++count)) {
+                        break;
+                    }
+                }
+                count = 0;
+                str.append("\", ");
             }
         }
-        str.append("\t],\n");
+        str.append("],\n");
 
-        str.append("\t\"birthplace\":\"").append(String.valueOf(birthPlace)).append("\",\n");
-
-        str.append("\t\"deathdate\":[\n");
+        str.append("\t\t\"deathdate\": [ ");
+        x = 0;
         for (Date date : deathDate) {
             if (date != null) {
-                str.append("\t\t\"").append(sdf.format(date)).append("\"\n");
+                str.append("\"").append(sdf.format(date)).append("\", ");
+            } else if (x == 0) {
+                str.append("\"NULL\", ");
+            }
+            x++;
+        }
+        str.append("],\n");
+
+        str.append("\t\t\"field\": [ ");
+        s = splitString(String.valueOf(field));
+        for (String l : s) {
+            if (l != null) {
+                str.append("\"");
+                while(l.charAt(count) != '\0') {
+                    str.append(l.charAt(count));
+                    if(!(l.length() > ++count)) {
+                        break;
+                    }
+                }
+                count = 0;
+                str.append("\", ");
             }
         }
-        str.append("\t],\n");
+        str.append("],\n");
 
-        str.append("\t\"field\":\"").append(String.valueOf(field)).append("\",\n");
-        str.append("\t\"genre\":\"").append(String.valueOf(genre)).append("\",\n");
-        str.append("\t\"instrument\":\"").append(String.valueOf(instrument)).append("\",\n");
-        str.append("\t\"nationality\":\"").append(String.valueOf(nationality)).append("\",\n");
-        str.append("\t\"thumbnail\":\"").append(String.valueOf(thumbnail)).append("\",\n");
-        str.append("\t\"wikipageid\":\"").append(wikiPageID).append("\",\n");
-        str.append("\t\"description\":\"").append(String.valueOf(description)).append("\"\n");
-        str.append("}");
+
+        str.append("\t\t\"genre\": \"");
+        while(genre[count] != '\0') {
+            str.append(genre[count]);
+            count++;
+        }
+        str.append("\",\n");
+        count = 0;
+
+        str.append("\t\t\"instrument\": \"");
+        while(instrument[count] != '\0') {
+            str.append(instrument[count]);
+            count++;
+        }
+        str.append("\",\n");
+        count = 0;
+
+        str.append("\t\t\"nationality\": \"");
+        while(nationality[count] != '\0') {
+            str.append(nationality[count]);
+            count++;
+        }
+        str.append("\",\n");
+        count = 0;
+
+        str.append("\t\t\"thumbnail\": \"");
+        while(thumbnail[count] != '\0') {
+            str.append(thumbnail[count]);
+            count++;
+        }
+        str.append("\",\n");
+        count = 0;
+
+        str.append("\t\t\"wikipageid\": ").append(wikiPageID).append(",\n");
+        str.append("\t\t\"description\": \"");
+        while(description[count] != '\0') {
+            str.append(description[count]);
+            count++;
+        }
+        str.append("\"\n");
+        str.append("\t}");
+
         return str.toString();
+    }
+
+    private String[] splitString(String s) {
+        String[] returnString = new String[0];
+        if(s != null) {
+            if(s.contains("{")) {
+                s = s.substring(1, s.indexOf("}"));
+                returnString = s.split("\\|");
+            } else {
+                returnString = new String[]{s};
+            }
+        }
+        return returnString;
     }
 }
