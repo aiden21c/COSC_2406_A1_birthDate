@@ -50,7 +50,7 @@ public class birthDate {
         String[] fileNames;
         String heapName = "";
 
-        File f = new File("resources");
+        File f = new File("../resources");
         fileNames = f.list();
 
         if (fileNames != null) {

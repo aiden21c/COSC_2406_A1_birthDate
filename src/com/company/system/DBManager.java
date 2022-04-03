@@ -15,7 +15,7 @@ public class DBManager {
 
 //    The datafile specified must be located in the resources folder
     public DBManager(String datafile) {
-        this.datafile = "resources/" + datafile;
+        this.datafile = "../resources/" + datafile;
         this.pageSize = getPageSize();
     }
 
@@ -23,11 +23,16 @@ public class DBManager {
      * @return the page size as an integer
      */
     private int getPageSize() {
-        String pageSizeString = datafile.substring(15);
+        String pageSizeString = datafile.substring(18);
         return Integer.parseInt(pageSizeString);
     }
 
 
+    /** Searches a heap file within the resources directory for any records with 'birthdate' fields matching a given range
+     * @param dateRange the range to search for matching birthdays between
+     * @return a string containing the time taken to complete the range search (in milliseconds)
+     * @throws IOException if the heap file cannot be found
+     */
     public String heapFileDateSearch(Date[] dateRange) throws IOException {
         RandomAccessFile raf = new RandomAccessFile(datafile, "r");
         long startTime = System.currentTimeMillis();

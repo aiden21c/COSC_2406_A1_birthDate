@@ -1,16 +1,5 @@
 package com.company.object;
 
-import com.sun.prism.shader.DrawEllipse_Color_AlphaTest_Loader;
-
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
-import java.text.ParseException;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 
@@ -118,14 +107,22 @@ public class Artist {
         }
         str.append("],\n");
 
-
-        str.append("\t\t\"genre\": \"");
-        while(genre[count] != '\0') {
-            str.append(genre[count]);
-            count++;
+        str.append("\t\t\"genre\": [ ");
+        s = splitString(String.valueOf(genre));
+        for (String l : s) {
+            if (l != null) {
+                str.append("\"");
+                while(l.charAt(count) != '\0') {
+                    str.append(l.charAt(count));
+                    if(!(l.length() > ++count)) {
+                        break;
+                    }
+                }
+                count = 0;
+                str.append("\", ");
+            }
         }
-        str.append("\",\n");
-        count = 0;
+        str.append("],\n");
 
         str.append("\t\t\"instrument\": \"");
         while(instrument[count] != '\0') {
@@ -163,6 +160,10 @@ public class Artist {
         return str.toString();
     }
 
+    /** Splits a string in format "{s1|s2|s3|...}" into a string array of the individual elements
+     * @param s A string in the above format
+     * @return A string array of the '|' separated elements contained within the curly braces
+     */
     private String[] splitString(String s) {
         String[] returnString = new String[0];
         if(s != null) {

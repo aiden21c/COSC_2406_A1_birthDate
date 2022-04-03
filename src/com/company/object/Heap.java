@@ -14,6 +14,10 @@ public class Heap {
 
     public void addToArtistArray(Artist a) { artists.add(a); }
 
+    /** Searches the ArrayList 'artists' for artists with matching 'birthdates' within the given range
+     * @param dates A range of dates to search for matching artists between
+     * @return A ArrayList containing the 'toString' of all matching records within the ArrayList
+     */
     public ArrayList<String> birthdateSearch(Date[] dates) {
         ArrayList<String> output = new ArrayList<>();
 
